@@ -7,8 +7,9 @@ import styles from "./App.css";
 class App extends Component {
   state = {
     table: {},
-    rows: 10,
-    columns: 10
+    rows: 20,
+    columns: 20,
+    started: false
   };
 
   componentDidMount() {
@@ -18,7 +19,7 @@ class App extends Component {
       .bufferCount(columns)
       .map(row =>
         row.reduce((acc, cell) => {
-          acc[cell] = Math.random() < 0.2;
+          acc[cell] = Math.random() < 0.6;
           return acc;
         }, {})
       )
@@ -36,7 +37,47 @@ class App extends Component {
     table[id] = !table[id];
     this.setState({ ...this.state, table });
   };
-
+  startGame = () => {
+    this.setState({ ...this.state, started: !this.state.started });
+    Observable.interval(500)
+      .takeWhile(() => this.state.started)
+      .subscribe(() => this.move());
+  };
+  move = () => {
+    const { table, rows, columns } = this.state;
+    const tbl = { ...table };
+    for (const cell in table) {
+      const neighbours = [
+        table[+cell + 1],
+        table[+cell - 1],
+        table[+cell - rows],
+        table[+cell + rows]
+      ];
+      const liveN = neighbours.filter(val => val === true);
+      if (table[cell]) {
+        if (liveN.length < 2 || liveN.length > 3) {
+          tbl[cell] = false;
+        }
+      } else {
+        if (liveN.length === 2 || liveN.length === 3) {
+          //tbl[cell] = true;
+          if (!table[+cell - 1] && table[+cell - 1] > 0) {
+            tbl[+cell - 1] = true;
+          } else if (!table[+cell + 1] && table[+cell + 1] < rows * columns) {
+            tbl[+cell + 1] = true;
+          } else if (table[+cell - rows] && table[+cell - rows] > 0) {
+            tbl[+cell - rows] = true;
+          } else if (
+            table[+cell + rows] &&
+            table[+cell + rows] < rows * columns
+          ) {
+            tbl[+cell + rows] = true;
+          }
+        }
+      }
+    }
+    this.setState({ ...this.state, table: tbl });
+  };
   genTable = () => {
     const { table, rows } = this.state;
     let counter = 0;
@@ -69,7 +110,12 @@ class App extends Component {
     return fin;
   };
   render() {
-    return <div className={styles.cellContainer}>{this.genTable()}</div>;
+    return (
+      <div className={styles.cellContainer}>
+        {this.genTable()}
+        <button onClick={this.startGame}>Start</button>
+      </div>
+    );
   }
 }
 

@@ -1,7 +1,7 @@
 .cellContainer {
   display: table;
-
-  width: 50%;
+  table-layout: fixed;
+  width: 80%;
 }
 .cell {
   display: table-cell;
