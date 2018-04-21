@@ -7,19 +7,20 @@ import styles from "./App.css";
 class App extends Component {
   state = {
     table: {},
-    rows: 20,
-    columns: 20,
-    started: false
+    rows: 40,
+    columns: 40,
+    started: false,
+    gen: 0
   };
 
   componentDidMount() {
     const { rows, columns } = this.state;
     let obj = {};
-    const obs$ = Observable.range(0, rows * columns)
+    const obs$ = Observable.range(1, rows * columns)
       .bufferCount(columns)
       .map(row =>
         row.reduce((acc, cell) => {
-          acc[cell] = Math.random() < 0.6;
+          acc[cell] = Math.random() < 0.25;
           return acc;
         }, {})
       )
@@ -43,6 +44,7 @@ class App extends Component {
       .takeWhile(() => this.state.started)
       .subscribe(() => this.move());
   };
+
   move = () => {
     const { table, rows, columns } = this.state;
     const tbl = { ...table };
@@ -51,32 +53,26 @@ class App extends Component {
         table[+cell + 1],
         table[+cell - 1],
         table[+cell - rows],
-        table[+cell + rows]
-      ];
-      const liveN = neighbours.filter(val => val === true);
-      if (table[cell]) {
-        if (liveN.length < 2 || liveN.length > 3) {
-          tbl[cell] = false;
-        }
-      } else {
-        if (liveN.length === 2 || liveN.length === 3) {
-          //tbl[cell] = true;
-          if (!table[+cell - 1] && table[+cell - 1] > 0) {
-            tbl[+cell - 1] = true;
-          } else if (!table[+cell + 1] && table[+cell + 1] < rows * columns) {
-            tbl[+cell + 1] = true;
-          } else if (table[+cell - rows] && table[+cell - rows] > 0) {
-            tbl[+cell - rows] = true;
-          } else if (
-            table[+cell + rows] &&
-            table[+cell + rows] < rows * columns
-          ) {
-            tbl[+cell + rows] = true;
-          }
-        }
+        table[+cell - rows - 1],
+        table[+cell - rows + 1],
+        table[+cell + rows],
+        table[+cell + rows + 1],
+        table[+cell + rows - 1]
+      ].filter(val => val === true).length;
+
+      if (table[cell] && (neighbours === 2 || neighbours === 3)) {
+        continue;
+      }
+      if (table[cell] && (neighbours < 2 || neighbours > 3)) {
+        // console.log("underpopulation", cell);
+        tbl[cell] = false;
+      }
+      if (!table[cell] && neighbours === 3) {
+        //console.log("reproduction", cell);
+        tbl[cell] = true;
       }
     }
-    this.setState({ ...this.state, table: tbl });
+    this.setState({ ...this.state, table: tbl, gen: this.state.gen + 1 });
   };
   genTable = () => {
     const { table, rows } = this.state;
@@ -110,10 +106,13 @@ class App extends Component {
     return fin;
   };
   render() {
+    const { gen, started } = this.state;
     return (
       <div className={styles.cellContainer}>
         {this.genTable()}
-        <button onClick={this.startGame}>Start</button>
+        <button onClick={this.startGame}>{started ? "Stop" : "Start"}</button>
+        <button>Reset</button>
+        <h3>Generation num:{gen}</h3>
       </div>
     );
   }

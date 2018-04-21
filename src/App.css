@@ -1,13 +1,14 @@
 .cellContainer {
   display: table;
   table-layout: fixed;
-  width: 80%;
+  width: 30%;
 }
 .cell {
   display: table-cell;
   border: 1px solid black;
-  width: 30px;
-  height: 30px;
+  table-layout: fixed;
+  width: 5px;
+  height: 5px;
   background-color: cadetblue;
 }
 
