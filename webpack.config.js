@@ -6,7 +6,7 @@ const htmlPlugin = new HtmlWebpackPlugin({
 });
 
 module.exports = {
-  devtool: "eval-source-map",
+  devtool: "cheap-eval-source-map",
   module: {
     rules: [
       {

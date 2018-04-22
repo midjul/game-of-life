@@ -1,0 +1,8 @@
+.row {
+  display: table-row;
+}
+.tableContainer {
+  display: table;
+  table-layout: fixed;
+  width: 40%;
+}

@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import { Observable } from "rxjs";
+import Table from "./components/Table/Table";
 
 import { hot } from "react-hot-loader";
 import styles from "./App.css";
@@ -14,13 +15,16 @@ class App extends Component {
   };
 
   componentDidMount() {
+    this.createTable();
+  }
+  createTable = () => {
     const { rows, columns } = this.state;
     let obj = {};
     const obs$ = Observable.range(1, rows * columns)
       .bufferCount(columns)
       .map(row =>
         row.reduce((acc, cell) => {
-          acc[cell] = Math.random() < 0.25;
+          acc[cell] = Math.random() < 0.15;
           return acc;
         }, {})
       )
@@ -32,7 +36,7 @@ class App extends Component {
         err => console.error(err),
         () => this.setState(prevState => ({ ...prevState, table: obj }))
       );
-  }
+  };
   selectHandler = id => {
     const { table } = this.state;
     table[id] = !table[id];
@@ -64,55 +68,32 @@ class App extends Component {
         continue;
       }
       if (table[cell] && (neighbours < 2 || neighbours > 3)) {
-        // console.log("underpopulation", cell);
+        // console.log("underpopulation and overpopulation", cell);
         tbl[cell] = false;
+        continue;
       }
       if (!table[cell] && neighbours === 3) {
         //console.log("reproduction", cell);
         tbl[cell] = true;
+        continue;
       }
     }
     this.setState({ ...this.state, table: tbl, gen: this.state.gen + 1 });
   };
-  genTable = () => {
-    const { table, rows } = this.state;
-    let counter = 0;
-    const res = [];
-    const fin = [];
-    for (const cell in table) {
-      res.push(
-        <div
-          onClick={() => this.selectHandler(cell)}
-          key={cell}
-          className={
-            table[cell]
-              ? [styles.cell, styles.cellSelected].join(" ")
-              : styles.cell
-          }
-        />
-      );
-    }
 
-    Observable.from(res)
-      .bufferCount(rows)
-      .map(r => {
-        return (
-          <div key={Math.random()} className={styles.row}>
-            {r}
-          </div>
-        );
-      })
-      .subscribe(x => fin.push(x));
-    return fin;
-  };
   render() {
-    const { gen, started } = this.state;
+    const { gen, started, table, rows } = this.state;
     return (
-      <div className={styles.cellContainer}>
-        {this.genTable()}
-        <button onClick={this.startGame}>{started ? "Stop" : "Start"}</button>
-        <button>Reset</button>
+      <div>
         <h3>Generation num:{gen}</h3>
+
+        <Table
+          table={table}
+          rows={rows}
+          cellClickHandler={this.selectHandler}
+        />
+        <button onClick={this.startGame}>{started ? "Stop" : "Start"}</button>
+        <button onClick={this.createTable}>Reset</button>
       </div>
     );
   }
