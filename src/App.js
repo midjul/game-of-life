@@ -84,7 +84,7 @@ class App extends Component {
   render() {
     const { gen, started, table, rows } = this.state;
     return (
-      <div>
+      <div className={styles.mainContainer}>
         <h3>Generation num:{gen}</h3>
 
         <Table
@@ -92,8 +92,13 @@ class App extends Component {
           rows={rows}
           cellClickHandler={this.selectHandler}
         />
-        <button onClick={this.startGame}>{started ? "Stop" : "Start"}</button>
-        <button onClick={this.createTable}>Reset</button>
+
+        <button className={styles.button} onClick={this.startGame}>
+          {started ? "Stop" : "Start"}
+        </button>
+        <button className={styles.button} onClick={this.createTable}>
+          Reset
+        </button>
       </div>
     );
   }
